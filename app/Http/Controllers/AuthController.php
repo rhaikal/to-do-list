@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rules;
-Use Illuminate\Auth\AuthenticationException;
 use App\Http\Resources\AuthResource;
-use Illuminate\Support\Facades\Auth;
-
+use App\Services\AuthService;
+use Illuminate\Http\Request;
+Use Illuminate\Auth\AuthenticationException;
+use Illuminate\Validation\Rules;
 class AuthController extends Controller
 {
+    private AuthService $authService;
+
     public function __construct()
     {
         if(!request()->expectsJson()){
             abort(404);
         }   
+        $this->authService = new AuthService();
     }
 
     public function login(Request $request)
@@ -25,12 +26,12 @@ class AuthController extends Controller
             'password' => 'required|string'
         ])->validated();
 
-        $data['token'] = Auth::attempt($validatedData);
+        $data = $this->authService->login($validatedData);
+        
         if(!$data['token']){
             throw new AuthenticationException;
         }
         
-        $data['message'] = 'Successfully logged in';
         return new AuthResource($data['message'], $data['token']);
     }
 
@@ -42,26 +43,19 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()]
         ])->validated();
     
-        $validatedData['password'] = bcrypt($validatedData['password']);
-        
-        $data['user'] = User::create($validatedData);
-        
-        $data['token'] = Auth::login($data['user']); 
-        
-        $data['message'] = 'Successfully created new user';
+        $data = $this->authService->register($validatedData);
         return new AuthResource($data['message'], $data['token'], $data['user']);
     }
 
     public function data()
     {
-        $data['message'] = 'Successfully called user data';
+        $data = $this->authService->data();
         return new AuthResource($data['message']);
     }
 
     public function logout()
     {
-        Auth::logout();
-        
+        $this->authService->logout();
         return response()->json([
             'message' => 'Successfully logged out',
         ]);
@@ -69,8 +63,7 @@ class AuthController extends Controller
 
     public function refresh()
     {
-        $data['message'] = 'Successfully refreshed authentication token';
-        $data['token'] = Auth::refresh();
+        $data = $this->authService->refresh();
         return new AuthResource($data['message'], $data['token']);
     }
 }
