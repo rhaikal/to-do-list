@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-Use Illuminate\Auth\AuthenticationException;
 use Illuminate\Validation\Rules;
+Use Illuminate\Auth\AuthenticationException;
+use App\Http\Resources\AuthResource;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
@@ -24,23 +25,13 @@ class AuthController extends Controller
             'password' => 'required|string'
         ])->validated();
 
-        $token = Auth::attempt($validatedData);
-        if(!$token){
+        $data['token'] = Auth::attempt($validatedData);
+        if(!$data['token']){
             throw new AuthenticationException;
         }
-
-        $user = Auth::user();
-        return response()->json([
-            'message' => 'Successfully logged in',
-            'data' => [
-                'user' => $user,
-                'authorization' => [
-                    'token' => $token,
-                    'type' => 'Bearer',
-                    'expired' => Auth::factory()->getTTL() * 60,
-                ]
-            ]
-        ]);
+        
+        $data['message'] = 'Successfully logged in';
+        return new AuthResource($data['message'], $data['token']);
     }
 
     public function register(Request $request)
@@ -52,35 +43,24 @@ class AuthController extends Controller
         ])->validated();
     
         $validatedData['password'] = bcrypt($validatedData['password']);
-        $user = User::create($validatedData);
         
-        $token = Auth::login($user); 
-        return response()->json([
-            'message' => 'Successfully registered new user',
-            'data' => [
-                'user' => $user,
-                'authorization' => [
-                    'token' => $token,
-                    'type' => 'Bearer',
-                    'expired' => Auth::factory()->getTTL() * 60,
-                ]
-            ]
-        ], 201);
+        $data['user'] = User::create($validatedData);
+        
+        $data['token'] = Auth::login($data['user']); 
+        
+        $data['message'] = 'Successfully created new user';
+        return new AuthResource($data['message'], $data['token'], $data['user']);
     }
 
     public function data()
     {
-        return response()->json([
-            'message' => 'Successfully called user data',
-            'data' => [
-                'user' => Auth::user()
-            ]
-        ]);
+        $data['message'] = 'Successfully called user data';
+        return new AuthResource($data['message']);
     }
 
     public function logout()
     {
-        auth()->logout();
+        Auth::logout();
         
         return response()->json([
             'message' => 'Successfully logged out',
@@ -89,16 +69,8 @@ class AuthController extends Controller
 
     public function refresh()
     {
-        return response()->json([
-            'message' => 'Successfully refreshed authentication token',
-            'data' => [
-                'user' => Auth::user(),
-                'authorization' => [
-                    'token' => Auth::refresh(),
-                    'type' => 'Bearer',
-                    'expired' => Auth::factory()->getTTL() * 60,
-                ]
-            ]
-        ]);
+        $data['message'] = 'Successfully refreshed authentication token';
+        $data['token'] = Auth::refresh();
+        return new AuthResource($data['message'], $data['token']);
     }
 }
