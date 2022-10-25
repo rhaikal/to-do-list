@@ -2,10 +2,18 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Auth;
 
 class AuthService
 {
+    private UserRepository $userRepository;
+    
+    public function __construct()
+    {
+        $this->userRepository = new UserRepository(); 
+    }
+
     /**
 	 * NOTE: untuk melakukan login
 	 */
@@ -23,7 +31,7 @@ class AuthService
     public function register(array $formData)
     {
         $formData['password'] = bcrypt($formData['password']);
-        $data['user'] = User::create($formData);
+        $data['user'] = $this->userRepository->create($formData);
         $data['token'] = Auth::login($data['user']); 
         $data['message'] = 'Successfully created new user';
 
