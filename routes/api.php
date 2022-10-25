@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -27,4 +28,13 @@ Route::prefix('auth')->group(function () {
         Route::post('refresh', [AuthController::class, 'refresh'])->name('auth.refresh');
         Route::get('data', [AuthController::class, 'data'])->name('auth.data');
     });
+});
+
+Route::prefix('user')->group(function () {
+    Route::middleware(['auth:api'])->group(function () {
+        Route::get('', [AdminController::class, 'showUsers']);
+        Route::get('{id}', [AdminController::class, 'showUser']);
+        Route::patch('{id}', [AdminController::class, 'updateUser']);
+        Route::delete('{id}', [AdminController::class, 'destroyUser']);
+    }); 
 });
