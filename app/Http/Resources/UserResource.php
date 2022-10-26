@@ -64,7 +64,7 @@ class UserResource extends JsonResource
      */
     public function withResponse($request, $response)
     {
-        if(empty($this->user)){
+        if(empty($this->id)){
             $response->setStatusCode(404);
         }
 
