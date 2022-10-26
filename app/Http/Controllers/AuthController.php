@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\AuthResource;
+use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 Use Illuminate\Auth\AuthenticationException;
@@ -26,13 +26,13 @@ class AuthController extends Controller
             'password' => 'required|string'
         ])->validated();
 
-        $data = $this->authService->login($validatedData);
-        
-        if(!$data['token']){
+        $token = $this->authService->login($validatedData);
+        if(!$token){
             throw new AuthenticationException;
         }
-        
-        return new AuthResource($data['message'], $data['token']);
+
+        $user = $this->authService->data();        
+        return new UserResource($user, 'Successfully logged in', $token);
     }
 
     public function register(Request $request)
@@ -43,14 +43,15 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()]
         ])->validated();
     
-        $data = $this->authService->register($validatedData);
-        return new AuthResource($data['message'], $data['token'], $data['user']);
+        $token = $this->authService->register($validatedData);
+        $user = $this->authService->data();
+        return new UserResource($user, 'Successfully registered new user', $token);
     }
 
     public function data()
     {
-        $data = $this->authService->data();
-        return new AuthResource($data['message']);
+        $user = $this->authService->data();
+        return new UserResource($user, 'Successfully get user data');
     }
 
     public function logout()
@@ -63,7 +64,8 @@ class AuthController extends Controller
 
     public function refresh()
     {
-        $data = $this->authService->refresh();
-        return new AuthResource($data['message'], $data['token']);
+        $token = $this->authService->refresh();
+        $user = $this->authService->data();
+        return new UserResource($user, 'Successfully refreshed authentication token', $token);
     }
 }

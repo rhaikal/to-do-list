@@ -1,7 +1,6 @@
 <?php 
 namespace App\Services;
 
-use App\Models\User;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,10 +18,9 @@ class AuthService
 	 */
     public function login(array $credentials)
     {
-        $data['token'] = Auth::attempt($credentials);
-        $data['message'] = 'Successfully logged in';
+        $token = Auth::attempt($credentials);;
 
-        return $data;
+        return $token;
     }
 
     /**
@@ -31,21 +29,19 @@ class AuthService
     public function register(array $formData)
     {
         $formData['password'] = bcrypt($formData['password']);
-        $data['user'] = $this->userRepository->create($formData);
-        $data['token'] = Auth::login($data['user']); 
-        $data['message'] = 'Successfully created new user';
-
-        return $data;
+        $user = $this->userRepository->create($formData);
+        $token = Auth::login($user);
+        
+        return $token;
     }
 
     /**
-	 * NOTE: untuk mendapatkan data user
+	 * NOTE: untuk mendapatkan data user yang login
 	 */
     public function data()
     {
-        $data['message'] = 'Successfully called user data';
-        
-        return $data;
+        $user = Auth::user();
+        return $user;
     }
 
     /**
@@ -61,10 +57,9 @@ class AuthService
 	 */
     public function refresh()
     {
-        $data['message'] = 'Successfully refreshed authentication token';
-        $data['token'] = Auth::refresh();
+        $token = Auth::refresh();
     
-        return $data;
+        return $token;
     }
 }
 ?>
