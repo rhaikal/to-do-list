@@ -1,9 +1,10 @@
 <?php
 
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\AuthController;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,9 +33,9 @@ Route::prefix('auth')->group(function () {
 
 Route::prefix('user')->group(function () {
     Route::middleware(['auth:api'])->group(function () {
-        Route::get('', [AdminController::class, 'showUsers']);
-        Route::get('{id}', [AdminController::class, 'showUser']);
-        Route::patch('{id}', [AdminController::class, 'updateUser']);
-        Route::delete('{id}', [AdminController::class, 'destroyUser']);
+        Route::get('', [AdminController::class, 'showUsers'])->name('users');
+        Route::get('{id}', [AdminController::class, 'showUser'])->name('user.show');
+        Route::patch('{id}', [AdminController::class, 'updateUser'])->name('user.update');
+        Route::delete('{id}', [AdminController::class, 'destroyUser'])->name('user.delete');
     }); 
 });

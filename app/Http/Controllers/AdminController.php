@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\AdminService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Services\AdminService;
 use Illuminate\Validation\Rules;
+use App\Http\Resources\UserResource;
+use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
 {
@@ -27,8 +28,8 @@ class AdminController extends Controller
      */
     public function showUsers()
     {
-        $user = $this->adminService->getUsers();
-        return response()->json($user);
+        $user = $this->adminService->getUsers;
+        return UserResource::collection($user);
     }
 
     /**
@@ -40,7 +41,7 @@ class AdminController extends Controller
     public function showUser($id)
     {
         $user = $this->adminService->getUserById($id);
-        return response()->json($user);
+        return new UserResource($user, 'Successfully get user data');
     }
 
     /**
@@ -61,13 +62,11 @@ class AdminController extends Controller
 
         $user = $this->adminService->getUserById($id);
         if(!$user){
-            return response()->json([
-                'message' => 'User not found'
-            ], 404);
+            return new UserResource($user);
         }
 
         $this->adminService->updateUser($user, $validatedData);
-        return response()->json($user);
+        return new UserResource($user, 'Successfully updated user');
     }
 
     /**
@@ -80,9 +79,7 @@ class AdminController extends Controller
     {
         $user = $this->adminService->getUserById($id);
         if(!$user){
-            return response()->json([
-                'message' => 'User not found'
-            ], 404);            
+            return new UserResource($user);           
         }
 
         $this->adminService->deleteUser($user);
