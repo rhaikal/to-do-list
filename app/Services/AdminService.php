@@ -52,4 +52,13 @@ class AdminService
     {
         $this->userRepository->delete($user);
     }
+
+    /**
+	 * NOTE: untuk menghapus user
+	 */
+    public function searchUser(string $keyword, string $operator, $compare)
+    {
+        $user = $this->userRepository->search($keyword, $operator, $compare);
+        return $user;
+    }
 }

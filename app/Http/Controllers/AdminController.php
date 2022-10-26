@@ -28,7 +28,12 @@ class AdminController extends Controller
      */
     public function showUsers()
     {
-        $user = $this->adminService->getUsers;
+        if(auth()->user()->role == 'admin'){
+            $user = $this->adminService->searchUser('role', '!=', 'super-admin');
+        } else {
+            $user = $this->adminService->getUsers();
+        }
+
         return UserResource::collection($user);
     }
 
@@ -41,6 +46,10 @@ class AdminController extends Controller
     public function showUser($id)
     {
         $user = $this->adminService->getUserById($id);
+        if(auth()->user()->role == 'admin' && $user->role == 'super-admin'){
+            abort(404);
+        }
+
         return new UserResource($user, 'Successfully get user data');
     }
 
@@ -53,6 +62,10 @@ class AdminController extends Controller
      */
     public function updateUser(Request $request, $id)
     {
+        if(auth()->user()->role == 'admin' && $request->has('role')){
+            abort(404);
+        }
+
         $validatedData = Validator::make($request->all(), [
             'role' => 'in:reguler,admin,super-admin',
             'name' => 'string|max:255',
@@ -80,6 +93,10 @@ class AdminController extends Controller
         $user = $this->adminService->getUserById($id);
         if(!$user){
             return new UserResource($user);           
+        }
+        
+        if(auth()->user()->role == 'admin' && $user->role == 'super-admin'){
+            abort(404);
         }
 
         $this->adminService->deleteUser($user);

@@ -46,7 +46,6 @@ class UserRepository
 	public function update(User $user, array $data)
 	{
 		$user->update($data);
-
 		return $user;
 	}
 
@@ -56,6 +55,15 @@ class UserRepository
 	public function delete(User $user)
 	{
 		$user->delete();
+	}
+
+	/**
+	 * Untuk mencari user berdasarkan keyword 
+	 */
+	public function search(string $keyword, string $operator, $compare)
+	{
+		$user = User::where($keyword, $operator, $compare)->get();
+		return $user;
 	}
 }
 ?>

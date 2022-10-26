@@ -32,10 +32,10 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::prefix('user')->group(function () {
-    Route::middleware(['auth:api'])->group(function () {
+    Route::middleware(['auth:api', 'admin'])->group(function () {
         Route::get('', [AdminController::class, 'showUsers'])->name('users');
         Route::get('{id}', [AdminController::class, 'showUser'])->name('user.show');
-        Route::patch('{id}', [AdminController::class, 'updateUser'])->name('user.update');
+        Route::patch('{id}', [AdminController::class, 'updateUser'])->name('user.create');
         Route::delete('{id}', [AdminController::class, 'destroyUser'])->name('user.delete');
     }); 
 });
