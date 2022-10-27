@@ -45,6 +45,12 @@ class TodoController extends Controller
             $todos = $this->todoService->getOwnTodos();
         }
 
+        if($todos->isEmpty()){
+            return response()->json([
+                'message' => 'Todo not found'
+            ], 404);
+        }
+
         return TodoResource::collection($todos, 'Successfully called all todo');
     }
 
@@ -69,10 +75,6 @@ class TodoController extends Controller
             'complete' => 'boolean'
         ])->validated();
 
-        if(!$todo){
-            return new TodoResource($todo);
-        }
-
         $this->todoService->updateTodo($todo, $validatedData);
         return new TodoResource($todo, 'Successfully updated data todo');
     }
@@ -80,10 +82,6 @@ class TodoController extends Controller
     public function delete(Todo $todo)
     {
         $this->authorize('delete', $todo);
-        
-        if(!$todo){
-            return new TodoResource($todo);
-        } 
 
         $this->todoService->deleteTodo($todo);
         return response()->json([

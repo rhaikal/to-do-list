@@ -9,7 +9,7 @@ class TodoResource extends JsonResource
     public function __construct($todo = null, string $message = null)
     {
         parent::__construct($todo);
-        $this->message = !empty($todo) ? $message : 'Todo not found';
+        $this->message = $message;
     }
 
     /**
@@ -33,19 +33,17 @@ class TodoResource extends JsonResource
         } else {
             return [
                 'message' => $this->message,
-                $this->mergeWhen(!empty($this->id), [
-                    'data' => [
-                        'todo' => [
-                            '_id' => !empty($this->id) ? $this->id : null ,
-                            'user_id' => !empty($this->user_id) ? $this->user_id : null , 
-                            'category' => !empty($this->category) ? $this->category : null ,
-                            'priority' => !empty($this->priority) ? $this->priority : null ,
-                            'task' => !empty($this->task) ? $this->task : null ,
-                            'dueDate' => !empty($this->dueDate) ? $this->dueDate : null ,
-                            'complete' => !empty($this->complete) ? $this->complete : null 
-                        ],
-                    ]
-                ])
+                'data' => [
+                    'todo' => [
+                        '_id' => $this->id,
+                        'user_id' => $this->user_id, 
+                        'category' => $this->category,
+                        'priority' => $this->priority,
+                        'task' => $this->task,
+                        'dueDate' => $this->dueDate,
+                        'complete' => $this->complete
+                    ],
+                ]
             ];
         }
     }
@@ -59,10 +57,6 @@ class TodoResource extends JsonResource
      */
     public function withResponse($request, $response)
     {
-        if(empty($this->id)){
-            $response->setStatusCode(404);
-        }
-
         if($request->routeIs('todo.store')){
             $response->setStatusCode(201);
         }
