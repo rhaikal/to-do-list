@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\TodoResource;
 use App\Services\TodoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -32,19 +33,19 @@ class TodoController extends Controller
     
         $todo = $this->todoService->createTodo($validatedData);
 
-        return response()->json($todo, 201);
+        return new TodoResource($todo, 'Successfully created new todo');
     }
     
     public function index()
     {
         $todos = $this->todoService->getTodos();
-        return response()->json($todos);
+        return TodoResource::collection($todos, 'Successfully called all todo');
     }
 
     public function show(string $id)
     {
         $todo = $this->todoService->getTodo($id);
-        return response()->json($todo);
+        return new TodoResource($todo, 'Successfully called data todo');
     }
 
     public function update(Request $request, string $id)
@@ -60,18 +61,19 @@ class TodoController extends Controller
         ])->validated();
 
         $todo = $this->todoService->getTodo($id);
-        $this->todoService->updateTodo($todo, $validatedData);
+        if(!$todo){
+            return new TodoResource($todo);
+        }
 
-        return $todo;
+        $this->todoService->updateTodo($todo, $validatedData);
+        return new TodoResource($todo, 'Successfully updated data todo');
     }
 
     public function delete(string $id)
     {
         $todo = $this->todoService->getTodo($id);
         if(!$todo){
-            return response()->json([
-                'message' => 'Todo not found'
-            ], 404);
+            return new TodoResource($todo);
         } 
 
         $this->todoService->deleteTodo($todo);

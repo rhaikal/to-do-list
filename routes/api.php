@@ -43,10 +43,10 @@ Route::prefix('user')->group(function () {
 
 Route::prefix('todo')->group(function () {
     Route::middleware(['auth:api'])->group(function () {
-        Route::post('', [TodoController::class, 'store']);
-        Route::get('', [TodoController::class, 'index']);
-        Route::get('{id}', [TodoController::class, 'show']);
-        Route::patch('{id}', [TodoController::class, 'update']);
-        Route::delete('{id}', [TodoController::class, 'delete']);
+        Route::post('', [TodoController::class, 'store'])->name('todo.store');
+        Route::get('', [TodoController::class, 'index'])->name('todo.index');
+        Route::get('{id}', [TodoController::class, 'show'])->name('todo.show');
+        Route::patch('{id}', [TodoController::class, 'update'])->name('todo.update');
+        Route::delete('{id}', [TodoController::class, 'delete'])->name('todo.delete');
     });
 });
