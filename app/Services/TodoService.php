@@ -43,8 +43,10 @@ class TodoService
      */
     public function getTodos()
     {
-        $todo = $this->todoRepository->getAll();
-        return $todo;
+        $query = $this->todoRepository->orderBy(['dueDate', 'priority'], ['asc', 'asc']);
+        
+        $todos = $this->todoRepository->get($query);
+        return $todos;
     }
 
     /**
