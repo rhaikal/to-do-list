@@ -9,11 +9,12 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserResource extends JsonResource
 {
-    public function __construct($user = null, string $message = null, $token = null)
+    public function __construct($user = null, string $message = null, $authorization = null)
     {
         parent::__construct($user);
-        $this->message = !empty($user) ? $message : 'User not found';
-        $this->token = $token;
+        $this->message = $message;
+        $this->token = isset($authorization['token']) ? $authorization['token'] : null;
+        $this->exp = isset($authorization['exp']) ? $authorization['exp'] : 60;
     }
 
     /**
@@ -24,7 +25,7 @@ class UserResource extends JsonResource
      */
     public function toArray($request)
     {
-        if($request->routeIs('users')){
+        if($request->routeIs('user.index')){
             return [
                 '_id' => $this->id,
                 'role' => $this->role,
@@ -34,23 +35,21 @@ class UserResource extends JsonResource
         } else {
             return [
                 'message' => $this->message,
-                $this->mergeWhen(!empty($this->id), [
-                    'data' => [
-                        'user' => [
-                            '_id' => !empty($this->id) ? $this->id : null,
-                            'role' => !empty($this->role) ? $this->role : null,
-                            'name' => !empty($this->name) ? $this->name : null,
-                            'email' => !empty($this->email) ? $this->email : null
-                        ],
-                        $this->mergeWhen(!empty($this->token), [
-                            'authorization' => [
-                                'token' => $this->token,
-                                'type' => 'Bearer',
-                                'expired' => Auth::factory()->getTTL() * 60,
-                            ]
-                        ])
-                    ]
-                ])
+                'data' => [
+                    'user' => [
+                        '_id' => $this->id,
+                        'role' => $this->role,
+                        'name' => $this->name,
+                        'email' => $this->email
+                    ],
+                    $this->mergeWhen(!empty($this->token), [
+                        'authorization' => [
+                            'token' => $this->token,
+                            'type' => 'Bearer',
+                            'expired' => $this->exp * 60,
+                        ]
+                    ])
+                ]
             ];
         }
     }
@@ -64,10 +63,6 @@ class UserResource extends JsonResource
      */
     public function withResponse($request, $response)
     {
-        if(empty($this->id)){
-            $response->setStatusCode(404);
-        }
-
         if($request->routeIs('auth.register')){
             $response->setStatusCode(201);
         }
