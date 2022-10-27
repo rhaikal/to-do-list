@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\TodoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,4 +39,14 @@ Route::prefix('user')->group(function () {
         Route::patch('{id}', [AdminController::class, 'updateUser'])->name('user.create');
         Route::delete('{id}', [AdminController::class, 'destroyUser'])->name('user.delete');
     }); 
+});
+
+Route::prefix('todo')->group(function () {
+    Route::middleware(['auth:api'])->group(function () {
+        Route::post('', [TodoController::class, 'store']);
+        Route::get('', [TodoController::class, 'index']);
+        Route::get('{id}', [TodoController::class, 'show']);
+        Route::patch('{id}', [TodoController::class, 'update']);
+        Route::delete('{id}', [TodoController::class, 'delete']);
+    });
 });
