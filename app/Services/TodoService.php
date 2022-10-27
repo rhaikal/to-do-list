@@ -43,9 +43,22 @@ class TodoService
      */
     public function getTodos()
     {
-        $query = $this->todoRepository->orderBy(['dueDate', 'priority'], ['asc', 'asc']);
-        
+        $todos = $this->todoRepository->getAll();
+
+        return $todos;
+    }
+
+    /**
+     * NOTE: untuk membuat todo baru
+     *
+     * @return \App\Models\Todo
+     */
+    public function getOwnTodos()
+    {
+        $query = $this->todoRepository->where('user_id', '=', auth()->id());
+        $query = $this->todoRepository->orderBy(['dueDate', 'priority'], ['asc', 'asc'], $query);
         $todos = $this->todoRepository->get($query);
+
         return $todos;
     }
 

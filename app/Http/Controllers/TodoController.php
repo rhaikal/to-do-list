@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\TodoResource;
-use App\Services\TodoService;
+use App\Models\Todo;
 use Illuminate\Http\Request;
+use App\Services\TodoService;
+use App\Http\Resources\TodoResource;
 use Illuminate\Support\Facades\Validator;
 
 class TodoController extends Controller
@@ -38,18 +39,26 @@ class TodoController extends Controller
     
     public function index()
     {
-        $todos = $this->todoService->getTodos();
+        if(auth()->user()->role == 'admin' || auth()->user()->role == 'super-admin'){
+            $todos = $this->todoService->getTodos();
+        }else{
+            $todos = $this->todoService->getOwnTodos();
+        }
+
         return TodoResource::collection($todos, 'Successfully called all todo');
     }
 
-    public function show(string $id)
+    public function show(Todo $todo)
     {
-        $todo = $this->todoService->getTodo($id);
+        $this->authorize('view', $todo);
+        
         return new TodoResource($todo, 'Successfully called data todo');
     }
 
-    public function update(Request $request, string $id)
+    public function update(Request $request, Todo $todo)
     {
+        $this->authorize('update', $todo);
+        
         $validatedData = Validator::make($request->all(), [
             'category' => 'string|max:15',
             'priority' => 'integer|min:0|max:5',
@@ -60,7 +69,6 @@ class TodoController extends Controller
             'complete' => 'boolean'
         ])->validated();
 
-        $todo = $this->todoService->getTodo($id);
         if(!$todo){
             return new TodoResource($todo);
         }
@@ -69,9 +77,10 @@ class TodoController extends Controller
         return new TodoResource($todo, 'Successfully updated data todo');
     }
 
-    public function delete(string $id)
+    public function delete(Todo $todo)
     {
-        $todo = $this->todoService->getTodo($id);
+        $this->authorize('delete', $todo);
+        
         if(!$todo){
             return new TodoResource($todo);
         } 
