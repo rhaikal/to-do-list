@@ -1,11 +1,10 @@
 <?php
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\AdminController;
 use App\Http\Controllers\TodoController;
+use App\Http\Controllers\UserController;
+use PHPUnit\TextUI\XmlConfiguration\Group;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,31 +21,22 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('auth')->group(function () {
-    Route::post('login', [AuthController::class, 'login'])->name('auth.login');
-    Route::post('register', [AuthController::class, 'register'])->name('auth.register');
-    Route::middleware(['auth:api'])->group(function () {
-        Route::post('logout', [AuthController::class, 'logout'])->name('auth.logout');
-        Route::post('refresh', [AuthController::class, 'refresh'])->name('auth.refresh');
-        Route::get('data', [AuthController::class, 'data'])->name('auth.data');
-    });
-});
+Route::post('/auth/login', [UserController::class, 'login'])->name('auth.login');
+Route::post('/auth/register', [UserController::class, 'register'])->name('auth.register');
 
-Route::prefix('user')->group(function () {
-    Route::middleware(['auth:api', 'admin'])->group(function () {
-        Route::get('', [AdminController::class, 'showUsers'])->name('users');
-        Route::get('{id}', [AdminController::class, 'showUser'])->name('user.show');
-        Route::patch('{id}', [AdminController::class, 'updateUser'])->name('user.create');
-        Route::delete('{id}', [AdminController::class, 'destroyUser'])->name('user.delete');
-    }); 
-});
-
-Route::prefix('todo')->group(function () {
-    Route::middleware(['auth:api'])->group(function () {
-        Route::post('', [TodoController::class, 'store'])->name('todo.store');
-        Route::get('', [TodoController::class, 'index'])->name('todo.index');
-        Route::get('{todo}', [TodoController::class, 'show'])->name('todo.show');
-        Route::patch('{todo}', [TodoController::class, 'update'])->name('todo.update');
-        Route::delete('{todo}', [TodoController::class, 'delete'])->name('todo.delete');
+Route::middleware(['auth:api'])->group(function () {
+    Route::middleware(['admin'])->group(function () {
+      Route::apiResource('user', UserController::class)->except('store');
     });
+   
+    Route::prefix('auth')->group(function () {
+       Route::controller(UserController::class)->group(function() {
+           Route::get('data', 'data')->name('auth.data');
+           Route::patch('setting', 'setting')->name('auth.setting');
+           Route::post('refresh', 'refresh')->name('auth.refresh');
+           Route::post('logout', 'logout')->name('auth.logout');
+        });
+    });
+
+    Route::apiResource('todo', TodoController::class);
 });
