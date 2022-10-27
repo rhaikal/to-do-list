@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class EnsureUserIsAdmin
 {
@@ -20,6 +21,6 @@ class EnsureUserIsAdmin
             return $next($request);
         }
 
-        abort(404);
+        throw new NotFoundHttpException;
     }
 }
