@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Todo;
+use Illuminate\Support\Carbon;
 
 class TodoRepository
 {    
@@ -142,67 +143,65 @@ class TodoRepository
         return $query;
     }
 
-    /**
-     * Untuk query mencari todo berdasarkan field dan value
-     *
-     * @param  mixed $field
-     * @param  mixed $operator
-     * @param  mixed $value
-     * @param  \Illuminate\Database\Eloquent\Builder $oldQuery
-     * @return \Illuminate\Database\Eloquent\Builder $query
-     */
-    public function where(array|string $field, array|string $operator, $value, $oldQuery = null)
+    public function paginateByUserId($paginate, $userId, $option = null)
     {
-        $query = empty($oldQuery) ? Todo::query() : $oldQuery;
-        
-        if(is_array($field)){
-            $query->where($field[0], $operator[0], $value[0]);
-            if($operator == '='){
-                $query->where($field[0], $value[0]);
+        $query = Todo::query();
+        if(!empty($option)){
+            $query = $this->processOption($option, $query);
+        }
+
+        $query->where('user_id', $userId);
+        $todos = $query->paginate($paginate);
+
+        return $todos;
+    }
+
+    public function paginateAll($paginate, $option = null)
+    {
+        $query = Todo::query();
+        if(!empty($option)){
+            $query = $this->processOption($option, $query);
+        }
+
+        $todos = $query->paginate($paginate);
+
+        return $todos;
+    }
+
+    public function processOption($option, $oldQuery)
+    {
+        if(isset($option['search'])){
+            $search = $option['search'];
+            if(isset($search['category'])){
+                $query = $this->whereCategory($search['category'], $oldQuery);
             }
-            for($i = 1; $i < count($field); $i++){
-                $query->where($field[$i], $operator[$i], $value[$i]);
-                if($operator == '='){
-                    $query->where($field[$i], $value[$i]);
-                }
-            }
-        } else {
-            if($operator == '='){
-                $query->where($field, $value);
-            } else {
-                $query->where($field, $operator, $value);
-            }
+        }
+
+        if(isset($option['today']) && $option['today']){
+            $query = $this->whereToday($oldQuery);
+        }
+
+        if(isset($option['sort']) && $option['sort']){
+            $query = $oldQuery->orderBy('priority', 'asc');
+            $query = $oldQuery->orderBy('dueDates', 'asc');    
         }
 
         return $query;
     }
 
-    /**
-     * Untuk mendapatkan todo dari hasil query
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder $query
-     * @return \App\Models\Todo $todo
-     */
-    public function get($oldQuery = null)
+    public function whereCategory($value, $oldQuery)
     {
-        $query = empty($oldQuery) ? Todo::query() : $oldQuery;
-        $todo = $query->get();
-        
-        return $todo;
+        $query = $oldQuery->where('category', 'LIKE', '%'.$value.'%');   
+
+        return $query;
     }
 
-    /**
-     * Untuk mendapatkan todo dengan paginate dari hasil query
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder $query
-     * @param  integer $perPage
-     * @return \App\Models\Todo $todo
-     */
-    public function paginate($perPage, $oldQuery = null)
+    public function whereToday($oldQuery)
     {
-        $query = empty($oldQuery) ? Todo::query() : $oldQuery;
-        $todo = $query->paginate($perPage);
-        
-        return $todo;
+        $start = Carbon::createFromTime();
+        $end = Carbon::createFromTime(24);
+        $query = $oldQuery->whereBetween('dueDate', [$start, $end]);
+    
+        return $query;
     }
 }

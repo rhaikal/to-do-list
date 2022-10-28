@@ -49,33 +49,31 @@ class TodoService
      */
     public function getTodos($data)
     {   
-        $query = null;
+        if(isset($data['user_id'])){
+            $userId = $data['user_id'];
+        }
+
+        $option = null;
+        if(isset($data['category'])){
+            $option['search']['category'] = $data['category'];
+        }
 
         if(isset($data['today']) && $data['today']){
-            $start = Carbon::createFromTime();
-            $end = Carbon::createFromTime(24);
-            $query = $this->todoRepository->where(['dueDate', 'dueDate'], ['>=', '<='], [$start, $end], $query);
-        }
-        
-        if(isset($data['category'])){
-            $query = $this->todoRepository->where('category', 'LIKE', '%' . $data['category'] . '%', $query);
-        }
-        
-        if(isset($data['user_id'])){
-            $query = $this->todoRepository->where('user_id', '=', $data['user_id'], $query);
+            $option['today'] = $data['today'];
         }
 
         if(auth()->user()->role == 'reguler'){
-            $query = $this->todoRepository->where('user_id', '=', auth()->id(), $query);
-            $query = $this->todoRepository->orderBy(['priority', 'dueDate'], ['asc', 'asc'], $query);
+            $option['sort'] = true;    
+            $userId = auth()->id();
         }
-        
-        $todos = $this->todoRepository->paginate(5, $query);
+
+        if(isset($userId)){
+            $todos = $this->todoRepository->paginateByUserId(5, $userId, $option);
+        } else {
+            $todos = $this->todoRepository->paginateAll(5, $option);
+        }
 
         return $todos;
-        // $todos = $this->todoRepository->getWithPaginate(5);
-
-        // return $todos;
     }
     
     /**

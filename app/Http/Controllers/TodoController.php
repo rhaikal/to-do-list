@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Services\TodoService;
 use App\Http\Resources\TodoResource;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class TodoController extends Controller
@@ -39,17 +40,8 @@ class TodoController extends Controller
         $validatedData = Validator::make($request->all(), [
             'today' => 'boolean',
             'category' => 'string|max:25',
+            'user_id' => [Rule::excludeIf(auth()->user()->role == 'reguler'), 'exists:todos']
         ])->validated();
-
-        if(auth()->user()->role == 'admin' || auth()->user()->role == 'super-admin'){
-            if($request->has('user_id')){
-                $userValidated = Validator::make(['user_id' => $request->user_id], [
-                    'user_id' => 'exists:todos'
-                ])->validated();
-
-                $validatedData['user_id'] = $userValidated['user_id'];
-            }
-        }
         
         $todos = $this->todoService->getTodos($validatedData);
         if($todos->isEmpty()){
