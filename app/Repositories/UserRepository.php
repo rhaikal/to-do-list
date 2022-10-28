@@ -30,6 +30,15 @@ class UserRepository
 		$user = User::all();
 		return $user;
 	}
+
+	/**
+	 * Untuk mengambil semua user dengan paginate
+	 */
+	public function getWithPaginate($perPage)
+	{
+		$user = User::paginate($perPage);
+		return $user;
+	}
 	
 	/**
 	 * Untuk mengambil user berdasarkan id
@@ -58,12 +67,75 @@ class UserRepository
 	}
 
 	/**
-	 * Untuk mencari user berdasarkan keyword 
+	 * UUntuk query mencari user berdasarkan field dan value
 	 */
-	public function search(string $keyword, string $operator, $compare)
+	public function where(array|string $field, array|string $operator, $keyword, $oldQuery = null)
 	{
-		$user = User::where($keyword, $operator, $compare)->get();
-		return $user;
+		$query = empty($oldQuery) ? User::query() : $oldQuery;
+
+		if(is_array($field)){
+            $query->where($field[0], $operator[0], $keyword[0]);
+            if($operator == '='){
+                $query->where($field[0], $keyword[0]);
+            }
+            for($i = 1; $i < count($field); $i++){
+                $query->orWhere($field[$i], $operator[$i], $keyword[$i]);
+                if($operator == '='){
+                    $query->orWhere($field[$i], $keyword[$i]);
+                }
+            }
+        } else {
+            if($operator == '='){
+                $query->where($field, $keyword);
+            } else {
+                $query->where($field, $operator, $keyword);
+            }
+        }
+
+		return $query;
 	}
+
+	/**
+	 * Untuk query mencari todo berdasarkan field dan value menggunakan orWhere
+	 */
+	public function orWhere(array|string $field, array|string $operator, $keyword, $oldQuery = null)
+	{
+		$query = empty($oldQuery) ? User::query() : $oldQuery;
+
+		if(is_array($field)){
+            $query->where($field[0], $operator[0], $keyword[0]);
+            if($operator == '='){
+                $query->where($field[0], $keyword[0]);
+            }
+            for($i = 1; $i < count($field); $i++){
+                $query->orWhere($field[$i], $operator[$i], $keyword[$i]);
+                if($operator == '='){
+                    $query->orWhere($field[$i], $keyword[$i]);
+                }
+            }
+        } else {
+            if($operator == '='){
+                $query->orWhere($field, $keyword);
+            } else {
+                $query->orWhere($field, $operator, $keyword);
+            }
+        }
+
+		return $query;
+	}
+
+	
+
+	/**
+     * Untuk mendapatkan todo dengan paginate dari hasil query
+     */
+    public function paginate(int $perPage, $oldQuery = null)
+    {
+		$query = empty($oldQuery) ? User::query() : $oldQuery;
+
+        $user = $query->paginate($perPage);
+        
+        return $user;
+    }
 }
 ?>

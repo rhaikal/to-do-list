@@ -15,16 +15,6 @@ class UserService
     {
         $this->userRepository = new UserRepository(); 
     }
-
-    /**
-	 * NOTE: untuk mengambil semua users di collection users
-	 */
-    public function getUsers()
-    {
-        $users = $this->userRepository->getAll();
-        return $users;
-    }
-
     
     /**
 	 * NOTE: untuk mendapatkan data user yang login
@@ -57,11 +47,23 @@ class UserService
     }
 
     /**
-	 * NOTE: untuk menghapus user
+	 * NOTE: untuk mengambil semua user
 	 */
-    public function searchUser(string $keyword, string $operator, $compare)
+    public function getUsers($keyword = null)
     {
-        $user = $this->userRepository->search($keyword, $operator, $compare);
+        // mencari berdasarkan name / email bila ada keyword
+        if(!empty($keyword)){
+            $query = $this->userRepository->orWhere(['name', 'email'], ['LIKE', 'LIKE'], ['%' . $keyword . '%', '%' . $keyword . '%']);
+        } else {
+            $query = null;
+        }
+        
+        // untuk mencari agar admin tidak mendapatkan user super-admin
+        if(auth()->user()->role == 'admin'){
+            $query = $this->userRepository->where('role', '!=', 'super-admin', $query);
+        }
+        
+        $user = $this->userRepository->paginate(5, $query);
         return $user;
     }
 

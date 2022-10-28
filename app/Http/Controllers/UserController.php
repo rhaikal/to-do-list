@@ -26,10 +26,14 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        if(auth()->user()->role == 'admin'){
-            $user = $this->userService->searchUser('role', '!=', 'super-admin');
+        $validatedData = Validator::make($request->all(), [
+            'search' => 'string'
+        ])->validated();
+
+        if(isset($validatedData['search'])){
+            $user = $this->userService->getUsers($validatedData['search']);
         } else {
             $user = $this->userService->getUsers();
         }
