@@ -53,10 +53,17 @@ class TodoService
      *
      * @return \App\Models\Todo
      */
-    public function getOwnTodos()
+    public function getOwnTodos($data)
     {
         $query = $this->todoRepository->where('user_id', '=', auth()->id());
-        $query = $this->todoRepository->orderBy(['dueDate', 'priority'], ['asc', 'asc'], $query);
+
+        if(isset($data['today']) && $data['today']){
+            $start = Carbon::createFromTime();
+            $end = Carbon::createFromTime(24);
+            $query = $this->todoRepository->where(['dueDate', 'dueDate'], ['>=', '<='], [$start, $end], $query);
+        }
+
+        $query = $this->todoRepository->orderBy(['priority', 'dueDate'], ['asc', 'asc'], $query);
         $todos = $this->todoRepository->get($query);
 
         return $todos;

@@ -139,7 +139,7 @@ class TodoRepository
      * @param  \Illuminate\Database\Eloquent\Builder $oldQuery
      * @return \Illuminate\Database\Eloquent\Builder $query
      */
-    public function where(array|string $field, array|string $operator, array|string $value, $oldQuery = null)
+    public function where(array|string $field, array|string $operator, $value, $oldQuery = null)
     {
         $query = empty($oldQuery) ? Todo::query() : $oldQuery;
         

@@ -33,12 +33,16 @@ class TodoController extends Controller
         return new TodoResource($todo, 'Successfully created new todo');
     }
     
-    public function index()
+    public function index(Request $request)
     {
+        $validatedData = Validator::make($request->all(), [
+            'today' => 'boolean',
+        ])->validated();
+
         if(auth()->user()->role == 'admin' || auth()->user()->role == 'super-admin'){
             $todos = $this->todoService->getTodos();
         }else{
-            $todos = $this->todoService->getOwnTodos();
+            $todos = $this->todoService->getOwnTodos($validatedData);
         }
 
         if($todos->isEmpty()){
@@ -75,7 +79,7 @@ class TodoController extends Controller
         return new TodoResource($todo, 'Successfully updated data todo');
     }
 
-    public function delete(Todo $todo)
+    public function destroy(Todo $todo)
     {
         $this->authorize('delete', $todo);
 
