@@ -49,7 +49,7 @@ class TodoService
      */
     public function getTodos()
     {
-        $todos = $this->todoRepository->getAll();
+        $todos = $this->todoRepository->getWithPaginate(5);
 
         return $todos;
     }
@@ -74,7 +74,7 @@ class TodoService
         }
 
         $query = $this->todoRepository->orderBy(['priority', 'dueDate'], ['asc', 'asc'], $query);
-        $todos = $this->todoRepository->get($query);
+        $todos = $this->todoRepository->paginate($query, 5);
 
         return $todos;
     }

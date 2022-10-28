@@ -39,6 +39,18 @@ class TodoRepository
     }
     
     /**
+     * Untuk mengambil sebagian data todo
+     *
+     * @param integer $perPage
+     * @return \App\Models\Todo
+     */
+    public function getWithPaginate($perPage)
+    {
+        $todo = Todo::paginate($perPage);
+        return $todo;
+    }
+    
+    /**
      * Untuk mengambil data todo berdasarkan id
      *
      * @param  mixed $id
@@ -174,6 +186,20 @@ class TodoRepository
     public function get($query)
     {
         $todo = $query->get();
+        
+        return $todo;
+    }
+
+    /**
+     * Untuk mendapatkan todo dengan paginate dari hasil query
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder $query
+     * @param  integer $perPage
+     * @return \App\Models\Todo $todo
+     */
+    public function paginate($query, int $perPage)
+    {
+        $todo = $query->paginate($perPage);
         
         return $todo;
     }
