@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Services\TodoService;
 use App\Http\Resources\TodoResource;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class TodoController extends Controller
 {
@@ -41,15 +42,18 @@ class TodoController extends Controller
         ])->validated();
 
         if(auth()->user()->role == 'admin' || auth()->user()->role == 'super-admin'){
-            $todos = $this->todoService->getTodos();
-        }else{
-            $todos = $this->todoService->getOwnTodos($validatedData);
-        }
+            if($request->has('user_id')){
+                $userValidated = Validator::make(['user_id' => $request->user_id], [
+                    'user_id' => 'exists:todos'
+                ])->validated();
 
+                $validatedData['user_id'] = $userValidated['user_id'];
+            }
+        }
+        
+        $todos = $this->todoService->getTodos($validatedData);
         if($todos->isEmpty()){
-            return response()->json([
-                'message' => 'Todo not found'
-            ], 404);
+            throw new NotFoundHttpException;
         }
 
         return TodoResource::collection($todos, 'Successfully called all todo');

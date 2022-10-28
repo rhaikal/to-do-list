@@ -183,8 +183,9 @@ class TodoRepository
      * @param  \Illuminate\Database\Eloquent\Builder $query
      * @return \App\Models\Todo $todo
      */
-    public function get($query)
+    public function get($oldQuery = null)
     {
+        $query = empty($oldQuery) ? Todo::query() : $oldQuery;
         $todo = $query->get();
         
         return $todo;
@@ -197,8 +198,9 @@ class TodoRepository
      * @param  integer $perPage
      * @return \App\Models\Todo $todo
      */
-    public function paginate($query, int $perPage)
+    public function paginate($perPage, $oldQuery = null)
     {
+        $query = empty($oldQuery) ? Todo::query() : $oldQuery;
         $todo = $query->paginate($perPage);
         
         return $todo;
