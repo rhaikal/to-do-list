@@ -122,8 +122,8 @@ class UserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()]
         ])->validated();
     
-        $user = $this->userService->getUserAuth();
         $token = $this->userService->register($validatedData);
+        $user = $this->userService->getUserAuth();
         return new UserResource($user, 'Successfully registered new user', $token);
     }
 

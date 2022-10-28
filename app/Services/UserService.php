@@ -93,9 +93,9 @@ class UserService
     {
         $formData['password'] = bcrypt($formData['password']);
         $user = $this->userRepository->create($formData);
-        $token = Auth::login($user);
+        $auth['token'] = Auth::login($user);
         
-        return $token;
+        return $auth;
     }
 
     /**
