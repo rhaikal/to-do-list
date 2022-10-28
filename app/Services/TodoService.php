@@ -22,6 +22,12 @@ class TodoService
      */
     public function createTodo(array $formData)
     {
+        if(isset($formData['category'])){
+            $category = strtolower($formData['category']);
+            $category = preg_replace('/\W+/', '-', $category);
+            $data['category'] = $category;
+        }
+
         $data['category'] = isset($formData['category']) ? $formData['category'] : null;
         $data['task'] = $formData['task'];
         $data['priority'] = isset($formData['priority']) ? $formData['priority'] : 5 ;
@@ -95,7 +101,9 @@ class TodoService
     public function updateTodo(Todo $todo, array $formData)
     {
         if(isset($formData['category'])){
-            $data['category'] = $formData['category'];
+            $category = strtolower($formData['category']);
+            $category = preg_replace('/\W+/', '-', $category);
+            $data['category'] = $category;
         }
 
         if(isset($formData['task'])){
