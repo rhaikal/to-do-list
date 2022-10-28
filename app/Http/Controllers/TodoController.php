@@ -14,10 +14,6 @@ class TodoController extends Controller
 
     public function __construct()
     {
-        if(!request()->expectsJson()){
-            abort(404);
-        }
-
         $this->todoService = new TodoService();
     }
     

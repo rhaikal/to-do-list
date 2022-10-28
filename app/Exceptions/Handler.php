@@ -3,6 +3,8 @@
 namespace App\Exceptions;
 
 use Throwable;
+use Illuminate\Auth\AuthenticationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -49,10 +51,32 @@ class Handler extends ExceptionHandler
         });
 
         $this->renderable(function (NotFoundHttpException $e, $request) {
-            if ($request->is('api/*')) {
+            if((empty($request->user()) || !auth()->check()) && $request->expectsJson()){
+                throw new AuthenticationException();
+            }
+
+            if ($request->is('api/user/*') && auth()->user()->role != 'reguler') {
+                return response()->json([
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            if ($request->is('api/todo/*') && $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Task not found'
+                ], 404);
+            }
+
+            if ($request->is('api/*') && $request->expectsJson()) {
                 return response()->json([
                     'message' => 'Resource not found'
                 ], 404);
+            }
+        });
+
+        $this->renderable(function (HttpException $e, $request) {
+            if ($request->is('api/*') && $request->expectsJson()) {
+                throw new NotFoundHttpException;
             }
         });
     }

@@ -9,6 +9,7 @@ use Illuminate\Validation\Rules;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Auth\AuthenticationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class UserController extends Controller
 {
@@ -16,10 +17,6 @@ class UserController extends Controller
 
     public function __construct()
     {
-        if(!request()->expectsJson()){
-            abort(404);
-        }
-
         $this->userService = new UserService();
     }
 
@@ -49,7 +46,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         if(auth()->user()->role == 'admin' && $user->role == 'super-admin'){
-            abort(404);
+            throw new NotFoundHttpException;
         }
 
         return new UserResource($user, 'Successfully get user data');
@@ -65,7 +62,7 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         if(auth()->user()->role == 'admin' && $request->has('role')){
-            abort(404);
+            throw new NotFoundHttpException;
         }
 
         $validatedData = Validator::make($request->all(), [
@@ -88,7 +85,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         if(auth()->user()->role == 'admin' && $user->role == 'super-admin'){
-            abort(404);
+            throw new NotFoundHttpException;
         }
 
         $this->userService->deleteUser($user);
