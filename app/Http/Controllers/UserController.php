@@ -45,10 +45,8 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        if(auth()->user()->role == 'admin' && $user->role == 'super-admin'){
-            throw new NotFoundHttpException;
-        }
-
+        $this->authorize('view', $user);
+        
         return new UserResource($user, 'Successfully get user data');
     }
 
@@ -61,7 +59,8 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        if(auth()->user()->role == 'admin' && $request->has('role')){
+        $this->authorize('update', $user);
+        if(auth()->user()->role != 'super-admin' && $request->has('role')){
             throw new NotFoundHttpException;
         }
 
@@ -84,9 +83,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        if(auth()->user()->role == 'admin' && $user->role == 'super-admin'){
-            throw new NotFoundHttpException;
-        }
+        $this->authorize('delete', $user);
 
         $this->userService->deleteUser($user);
         return response()->json([
@@ -132,7 +129,7 @@ class UserController extends Controller
 
     public function setting(Request $request)
     {
-        $validatedData = Validator($request->all(), [
+        $validatedData = Validator::make($request->all(), [
             'name' => 'string|max:255',
             'email' => 'string|max:255',
             'password' => ['confirmed', Rules\Password::defaults()]
@@ -140,7 +137,7 @@ class UserController extends Controller
 
         $user = $this->userService->getUserAuth();
         $this->userService->updateUser($user, $validatedData);
-        return new UserResource($user, 'Successfully get user data');
+        return new UserResource($user, 'Successfully updated user data');
     }
 
     public function delete()
