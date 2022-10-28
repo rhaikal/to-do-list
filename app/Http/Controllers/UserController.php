@@ -33,11 +33,7 @@ class UserController extends Controller
             'search' => 'string'
         ])->validated();
 
-        if(isset($validatedData['search'])){
-            $user = $this->userService->getUsers($validatedData['search']);
-        } else {
-            $user = $this->userService->getUsers();
-        }
+        $user = $this->userService->getUsers($validatedData);
 
         if($user->isEmpty()) {
             throw new NotFoundHttpException;

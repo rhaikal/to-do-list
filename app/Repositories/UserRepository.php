@@ -39,15 +39,6 @@ class UserRepository
 		$user = User::paginate($perPage);
 		return $user;
 	}
-	
-	/**
-	 * Untuk mengambil user berdasarkan id
-	 */
-	public function getById(string $id)
-	{
-		$user = User::find($id);
-		return $user;
-	}
 
 	/**
 	 * Untuk mengupdate user
@@ -67,75 +58,50 @@ class UserRepository
 	}
 
 	/**
-	 * UUntuk query mencari user berdasarkan field dan value
+	 * Untuk query mencari user berdasarkan field dan mendekati keyword
 	 */
-	public function where(array|string $field, array|string $operator, $keyword, $oldQuery = null)
+	public function whereLikes($field, $keyword, $oldQuery, $or = false)
 	{
-		$query = empty($oldQuery) ? User::query() : $oldQuery;
-
-		if(is_array($field)){
-            $query->where($field[0], $operator[0], $keyword[0]);
-            if($operator == '='){
-                $query->where($field[0], $keyword[0]);
-            }
-            for($i = 1; $i < count($field); $i++){
-                $query->orWhere($field[$i], $operator[$i], $keyword[$i]);
-                if($operator == '='){
-                    $query->orWhere($field[$i], $keyword[$i]);
-                }
-            }
-        } else {
-            if($operator == '='){
-                $query->where($field, $keyword);
-            } else {
-                $query->where($field, $operator, $keyword);
-            }
-        }
+		if($or){
+			$query = $oldQuery->orWhere($field, 'LIKE', '%'. $keyword .'%');
+		}else {
+			$query = $oldQuery->where($field, 'LIKE', '%'. $keyword .'%');
+		}
 
 		return $query;
 	}
 
 	/**
-	 * Untuk query mencari todo berdasarkan field dan value menggunakan orWhere
+	 * Untuk mengambil semua user yang bukan super-admin dengan paginate
 	 */
-	public function orWhere(array|string $field, array|string $operator, $keyword, $oldQuery = null)
+	public function paginateWithoutSuperAdmin($paginate, $search = null)
 	{
-		$query = empty($oldQuery) ? User::query() : $oldQuery;
+		$query = User::query();
+		if(!empty($search)){
+			$query = $this->whereLikes('name', $search, $query);
+			$query = $this->whereLikes('email', $search, $query, true);
+		}
 
-		if(is_array($field)){
-            $query->where($field[0], $operator[0], $keyword[0]);
-            if($operator == '='){
-                $query->where($field[0], $keyword[0]);
-            }
-            for($i = 1; $i < count($field); $i++){
-                $query->orWhere($field[$i], $operator[$i], $keyword[$i]);
-                if($operator == '='){
-                    $query->orWhere($field[$i], $keyword[$i]);
-                }
-            }
-        } else {
-            if($operator == '='){
-                $query->orWhere($field, $keyword);
-            } else {
-                $query->orWhere($field, $operator, $keyword);
-            }
-        }
+		$query = $query->where('role', '!=', 'super-admin');
+		$users = $query->paginate($paginate);
 
-		return $query;
+		return $users;
 	}
 
-	
-
 	/**
-     * Untuk mendapatkan todo dengan paginate dari hasil query
-     */
-    public function paginate(int $perPage, $oldQuery = null)
-    {
-		$query = empty($oldQuery) ? User::query() : $oldQuery;
+	 * Untuk mengambil semua user dengan paginate
+	 */
+	public function paginateAll($paginate, $search = null)
+	{
+		$query = User::query();
+		if(!empty($search)){
+			$query = $this->whereLikes('name', $search, $query);
+			$query = $this->whereLikes('email', $search, $query, true);
+		}
 
-        $user = $query->paginate($perPage);
-        
-        return $user;
-    }
+		$users = $query->paginate($paginate);
+
+		return $users;
+	}
 }
 ?>

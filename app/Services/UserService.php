@@ -49,22 +49,21 @@ class UserService
     /**
 	 * NOTE: untuk mengambil semua user
 	 */
-    public function getUsers($keyword = null)
+    public function getUsers($data)
     {
-        // mencari berdasarkan name / email bila ada keyword
-        if(!empty($keyword)){
-            $query = $this->userRepository->orWhere(['name', 'email'], ['LIKE', 'LIKE'], ['%' . $keyword . '%', '%' . $keyword . '%']);
+        if(isset($data['search'])){
+            $keyword = $data['search'];
         } else {
-            $query = null;
+            $keyword = null;
         }
-        
-        // untuk mencari agar admin tidak mendapatkan user super-admin
+
         if(auth()->user()->role == 'admin'){
-            $query = $this->userRepository->where('role', '!=', 'super-admin', $query);
+            $users = $this->userRepository->paginateWithoutSuperAdmin(5, $keyword); 
+        } else {
+            $users = $this->userRepository->paginateAll(5, $keyword);
         }
-        
-        $user = $this->userRepository->paginate(5, $query);
-        return $user;
+
+        return $users;
     }
 
     /**
