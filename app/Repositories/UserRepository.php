@@ -54,6 +54,7 @@ class UserRepository
 	 */
 	public function delete(User $user)
 	{
+		$user->todo()->delete();
 		$user->delete();
 	}
 
