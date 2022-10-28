@@ -63,6 +63,10 @@ class TodoService
             $query = $this->todoRepository->where(['dueDate', 'dueDate'], ['>=', '<='], [$start, $end], $query);
         }
 
+        if(isset($data['category'])){
+            $query = $this->todoRepository->where('category', 'LIKE', '%' . $data['category'] . '%', $query);
+        }
+
         $query = $this->todoRepository->orderBy(['priority', 'dueDate'], ['asc', 'asc'], $query);
         $todos = $this->todoRepository->get($query);
 

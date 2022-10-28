@@ -37,6 +37,7 @@ class TodoController extends Controller
     {
         $validatedData = Validator::make($request->all(), [
             'today' => 'boolean',
+            'category' => 'string|max:25',
         ])->validated();
 
         if(auth()->user()->role == 'admin' || auth()->user()->role == 'super-admin'){
