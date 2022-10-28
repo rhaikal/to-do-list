@@ -31,7 +31,7 @@ class UserService
     public function updateUser(User|Authenticatable $user, array $formData)
     {
         if(isset($formData['password'])){
-            $formData['passsword'] = bcrypt($formData['password']);
+            $formData['password'] = bcrypt($formData['password']);
         }
 
         $user = $this->userRepository->update($user, $formData);
