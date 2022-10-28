@@ -55,15 +55,15 @@ class Handler extends ExceptionHandler
                 throw new AuthenticationException();
             }
 
-            if ($request->is('api/user/*') && auth()->user()->role != 'reguler') {
+            if ($request->is('api/user*') && auth()->user()->role != 'reguler') {
                 return response()->json([
                     'message' => 'User not found'
                 ], 404);
             }
 
-            if ($request->is('api/todo/*') && $request->expectsJson()) {
+            if ($request->is('api/todo*') && $request->expectsJson()) {
                 return response()->json([
-                    'message' => 'Task not found'
+                    'message' => 'Todo not found'
                 ], 404);
             }
 

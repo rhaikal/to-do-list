@@ -9,6 +9,7 @@ use Illuminate\Validation\Rules;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class UserController extends Controller
@@ -38,6 +39,10 @@ class UserController extends Controller
             $user = $this->userService->getUsers();
         }
 
+        if($user->isEmpty()) {
+            throw new NotFoundHttpException;
+        }
+
         return UserResource::collection($user);
     }
 
@@ -64,12 +69,9 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $this->authorize('update', $user);
-        if(auth()->user()->role != 'super-admin' && $request->has('role')){
-            throw new NotFoundHttpException;
-        }
-
+        
         $validatedData = Validator::make($request->all(), [
-            'role' => 'in:reguler,admin,super-admin',
+            'role' => ['in:reguler,admin,super-admin', Rule::excludeIf(auth()->user()->role == 'admin')],
             'name' => 'string|max:255',
             'email' => 'string|email|max:255|unique:users',
             'password' => Rules\Password::defaults(),
